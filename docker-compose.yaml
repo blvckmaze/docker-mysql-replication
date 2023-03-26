@@ -1,0 +1,41 @@
+version: "3.9"
+
+volumes:
+  mysql_master_data:
+    name: mysql_master_data
+  mysql_slave_data:
+    name: mysql_slave_data
+
+networks:
+  mysql_replication:
+    name: mysql_replication
+    external: false
+
+services:
+  mysql_master:
+    build:
+      context: $PWD/docker/mysql/master
+      dockerfile: ../Dockerfile
+    hostname: master.mysql
+    container_name: mysql_master
+    env_file:
+      - .env.master
+    volumes:
+      - mysql_master_data:/var/lib/mysql
+    networks:
+      - mysql_replication
+
+  mysql_slave:
+    build:
+      context: $PWD/docker/mysql/slave
+      dockerfile: ../Dockerfile
+    hostname: slave.mysql
+    container_name: mysql_slave
+    env_file:
+      - .env.slave
+    volumes:
+      - mysql_slave_data:/var/lib/mysql
+    networks:
+      - mysql_replication
+    depends_on:
+      - mysql_master
